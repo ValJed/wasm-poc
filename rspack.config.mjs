@@ -31,9 +31,7 @@ export default {
             options: {
               postcssOptions: {
                 plugins: {
-                  tailwindcss: {
-                    config: './taiwlind.config.js',
-                  },
+                  /* tailwindcss: {}, */
                   autoprefixer: {},
                 },
               },

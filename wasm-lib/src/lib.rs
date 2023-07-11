@@ -1,5 +1,5 @@
-// use regex::*;
 use wasm_bindgen::prelude::*;
+
 #[wasm_bindgen]
 extern "C" {
     pub fn alert(s: &str);
@@ -21,8 +21,10 @@ pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
     let mut is_line_comment = false;
     let mut comments: Vec<String> = vec![];
     let mut current_comment: String = String::new();
+    // let mut is_afer_line_comment = false;
 
     for char in code.chars().into_iter() {
+        // If we are in a string we do nothing about comments
         if !is_comment && !is_line_comment {
             if char == '\'' && !is_in_double_str {
                 is_in_single_str = !is_in_single_str;
@@ -30,6 +32,10 @@ pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
                 is_in_double_str = !is_in_double_str;
             }
         }
+
+        // if is_afer_line_comment && !is_line_comment && char != '/' {
+        //     is_afer_line_comment = false
+        // }
 
         if is_in_single_str || is_in_double_str {
             continue;
@@ -54,6 +60,7 @@ pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
             comments.push(current_comment.clone());
             current_comment = String::new();
             is_line_comment = false;
+            // is_afer_line_comment = true;
             continue;
         }
 
@@ -74,5 +81,10 @@ pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
         prev_char = char;
     }
 
-    Ok(serde_wasm_bindgen::to_value(&comments)?)
+    let filtered_comments: Vec<String> = comments
+        .into_iter()
+        .filter(|comment| !comment.is_empty())
+        .collect();
+
+    Ok(serde_wasm_bindgen::to_value(&filtered_comments)?)
 }
