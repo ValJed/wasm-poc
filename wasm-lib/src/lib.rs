@@ -1,6 +1,6 @@
 use gloo::events::EventListener;
 use wasm_bindgen::prelude::*;
-use web_sys::{Event, HtmlInputElement, InputEvent};
+use web_sys::{Element, Event, HtmlInputElement, InputEvent};
 
 #[wasm_bindgen]
 extern "C" {
@@ -18,24 +18,38 @@ macro_rules! println {
 pub fn instantiate_rust_listener() -> Result<(), JsValue> {
     let window = web_sys::window().expect("window should exist");
     let document = window.document().expect("document should exist");
-    let input_res = document
+    let input = document
         .query_selector(".block__rust .input")
         // .dyn_ref::<web_sys::HtmlElement>()
-        .expect("input textarea should exist");
-    let input = match input_res {
-        Some(res) => res,
-        _ => {
-            println!("No textarea input found");
-            return Ok(());
-        }
-    };
+        .expect("input textarea should exist")
+        .unwrap();
+    // let input = match input_res {
+    //     Some(res) => res,
+    //     _ => {
+    //         println!("No textarea input found");
+    //         return Ok(());
+    //     }
+    // };
 
     let closure = Closure::wrap(Box::new(move |event: Event| {
         let input_event = event.dyn_into::<InputEvent>().unwrap();
         let target = input_event.target().unwrap();
         let input_element: HtmlInputElement = target.unchecked_into();
         let value = input_element.value();
-        println!("input_value: {:?}", value);
+        let comments = extract_comments(&value).expect("Should return vector of comments");
+        let output = document
+            .query_selector(".block__rust .output__list")
+            .unwrap()
+            .unwrap();
+
+        output.set_inner_html("");
+
+        for comment in comments {
+            let li: Element = document.create_element("li").unwrap().dyn_into().unwrap();
+            li.set_inner_html(&comment);
+            output.append_child(&li).unwrap();
+            // println!("value: {:?}", value);
+        }
     }) as Box<dyn FnMut(_)>);
 
     input
@@ -47,8 +61,8 @@ pub fn instantiate_rust_listener() -> Result<(), JsValue> {
     Ok(())
 }
 
-#[wasm_bindgen]
-pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
+// #[wasm_bindgen]
+pub fn extract_comments(code: &str) -> Result<Vec<String>, ()> {
     let mut is_in_single_str = false;
     let mut is_in_double_str = false;
     let mut prev_char = ' ';
@@ -121,5 +135,6 @@ pub fn extract_comments(code: &str) -> Result<JsValue, JsValue> {
         .filter(|comment| !comment.is_empty())
         .collect();
 
-    Ok(serde_wasm_bindgen::to_value(&filtered_comments)?)
+    Ok(filtered_comments)
+    // Ok(serde_wasm_bindgen::to_value(&filtered_comments)?)
 }
