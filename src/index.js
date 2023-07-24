@@ -1,27 +1,28 @@
-import init, { extract_comments } from 'wasm-lib'
+import init, { extract_comments, instantiate_rust_listener } from 'wasm-lib'
 
 document.addEventListener('DOMContentLoaded', async () => {
   await init()
-  const input = document.querySelector('textarea')
-  const outputList = document.querySelector('.output__list')
+  instantiate_rust_listener()
+  const input = document.querySelector('.block__js .input')
+  const outputList = document.querySelector('.block__js .output__list')
 
   input.addEventListener('input', (e) => {
-    /* if (e.key === 'Enter' && !e.shiftKey) { */
-    /* e.preventDefault() */
-    console.time('rust')
-    const extracted = extract_comments(input.value)
-    const rustTimer = console.timeEnd('rust')
-    console.log('Rust Timer', rustTimer)
+    /* console.time('rust') */
+    /* const extracted = extract_comments(input.value) */
+    /* const rustTimer = console.timeEnd('rust') */
+    /* console.log('Rust Timer', rustTimer) */
 
     console.time('js')
-    const extractedJs = extractComment(input.value)
+    const extracted = extractComment(input.value)
     const jsTimer = console.timeEnd('js')
     console.log('Js Timer', jsTimer)
 
-    /* outputList.innerHTML = '' */
-    /* extracted.forEach((comment) => { */
-    /*   outputList.innerHTML += `<li class="output__item">${comment}</li>` */
-    /* }) */
+    console.log('extracted', extracted)
+
+    outputList.innerHTML = ''
+    extracted.forEach((comment) => {
+      outputList.innerHTML += `<li class="output__item">${comment}</li>`
+    })
   })
 })
 

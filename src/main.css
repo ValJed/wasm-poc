@@ -1,20 +1,35 @@
 .container {
   margin: 3rem;
+  font-family: sans-serif;
+}
+
+h1 {
+  margin: 2rem 1rem;
+}
+
+.content {
   display: flex;
   flex-direction: column;
 }
 
 @media (min-width: 1100px) {
-  .container {
+  .content {
     flex-direction: row;
   }
 }
 
-.block {
+.content > .block {
   margin: 1rem;
+}
+
+.block {
   width: 100%;
   flex-grow: 1;
   min-height: 20rem;
+}
+
+.block h2 {
+  /* text-align: center; */
 }
 
 .input {
@@ -32,4 +47,15 @@
 
 .output__item {
   white-space: pre-line;
+}
+
+.insert-dom__btn {
+  padding: 10px 15px;
+  background-color: tule;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #0b768c;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 5px 5px 5px yellow;
 }

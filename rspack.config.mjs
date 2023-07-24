@@ -43,7 +43,11 @@ export default {
     ],
   },
   devServer: {
-    watchFiles: ['index.html', 'src/**'],
+    watchFiles: [
+      /* 'index.html',  */
+      'src/**',
+      /* 'wasm-lib/src/**' */
+    ],
   },
   builtins: {
     html: [
