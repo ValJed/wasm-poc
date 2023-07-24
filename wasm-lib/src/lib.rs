@@ -1,4 +1,6 @@
+use gloo::events::EventListener;
 use wasm_bindgen::prelude::*;
+use web_sys::{Event, HtmlInputElement, InputEvent};
 
 #[wasm_bindgen]
 extern "C" {
@@ -10,6 +12,39 @@ extern "C" {
 
 macro_rules! println {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+
+#[wasm_bindgen]
+pub fn instantiate_rust_listener() -> Result<(), JsValue> {
+    let window = web_sys::window().expect("window should exist");
+    let document = window.document().expect("document should exist");
+    let input_res = document
+        .query_selector(".block__rust .input")
+        // .dyn_ref::<web_sys::HtmlElement>()
+        .expect("input textarea should exist");
+    let input = match input_res {
+        Some(res) => res,
+        _ => {
+            println!("No textarea input found");
+            return Ok(());
+        }
+    };
+
+    let closure = Closure::wrap(Box::new(move |event: Event| {
+        let input_event = event.dyn_into::<InputEvent>().unwrap();
+        let target = input_event.target().unwrap();
+        let input_element: HtmlInputElement = target.unchecked_into();
+        let value = input_element.value();
+        println!("input_value: {:?}", value);
+    }) as Box<dyn FnMut(_)>);
+
+    input
+        .add_event_listener_with_callback("input", closure.as_ref().unchecked_ref())
+        .unwrap();
+
+    closure.forget();
+
+    Ok(())
 }
 
 #[wasm_bindgen]
