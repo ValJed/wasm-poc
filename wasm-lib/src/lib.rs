@@ -1,6 +1,6 @@
 use gloo::events::EventListener;
 use wasm_bindgen::prelude::*;
-use web_sys::{Element, Event, HtmlInputElement, InputEvent};
+use web_sys::{console, window, Element, Event, HtmlInputElement, InputEvent};
 
 #[wasm_bindgen]
 extern "C" {
@@ -16,40 +16,35 @@ macro_rules! println {
 
 #[wasm_bindgen]
 pub fn instantiate_rust_listener() -> Result<(), JsValue> {
-    let window = web_sys::window().expect("window should exist");
+    let window = window().expect("window should exist");
     let document = window.document().expect("document should exist");
     let input = document
         .query_selector(".block__rust .input")
-        // .dyn_ref::<web_sys::HtmlElement>()
         .expect("input textarea should exist")
         .unwrap();
-    // let input = match input_res {
-    //     Some(res) => res,
-    //     _ => {
-    //         println!("No textarea input found");
-    //         return Ok(());
-    //     }
-    // };
 
     let closure = Closure::wrap(Box::new(move |event: Event| {
         let input_event = event.dyn_into::<InputEvent>().unwrap();
         let target = input_event.target().unwrap();
         let input_element: HtmlInputElement = target.unchecked_into();
         let value = input_element.value();
+        console::time_with_label("RustExtractCode");
         let comments = extract_comments(&value).expect("Should return vector of comments");
+        console::time_end_with_label("RustExtractCode");
         let output = document
             .query_selector(".block__rust .output__list")
             .unwrap()
             .unwrap();
 
+        console::time_with_label("RustManipulateDom");
         output.set_inner_html("");
-
         for comment in comments {
             let li: Element = document.create_element("li").unwrap().dyn_into().unwrap();
+            li.set_attribute("class", "output__item").unwrap();
             li.set_inner_html(&comment);
             output.append_child(&li).unwrap();
-            // println!("value: {:?}", value);
         }
+        console::time_end_with_label("RustManipulateDom");
     }) as Box<dyn FnMut(_)>);
 
     input
@@ -70,7 +65,6 @@ pub fn extract_comments(code: &str) -> Result<Vec<String>, ()> {
     let mut is_line_comment = false;
     let mut comments: Vec<String> = vec![];
     let mut current_comment: String = String::new();
-    // let mut is_afer_line_comment = false;
 
     for char in code.chars().into_iter() {
         // If we are in a string we do nothing about comments
@@ -81,10 +75,6 @@ pub fn extract_comments(code: &str) -> Result<Vec<String>, ()> {
                 is_in_double_str = !is_in_double_str;
             }
         }
-
-        // if is_afer_line_comment && !is_line_comment && char != '/' {
-        //     is_afer_line_comment = false
-        // }
 
         if is_in_single_str || is_in_double_str {
             continue;
@@ -116,6 +106,7 @@ pub fn extract_comments(code: &str) -> Result<Vec<String>, ()> {
         // End of regular comment, we remove * from the comment and extract it
         if prev_char == '*' && char == '/' && is_comment {
             current_comment.pop();
+            println!("current_comment: {:?}", current_comment);
             comments.push(current_comment.clone());
             current_comment = String::new();
             is_comment = false;

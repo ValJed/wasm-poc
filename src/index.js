@@ -7,22 +7,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const outputList = document.querySelector('.block__js .output__list')
 
   input.addEventListener('input', (e) => {
-    /* console.time('rust') */
-    /* const extracted = extract_comments(input.value) */
-    /* const rustTimer = console.timeEnd('rust') */
-    /* console.log('Rust Timer', rustTimer) */
-
-    console.time('js')
+    console.time('jsExtractedCode')
     const extracted = extractComment(input.value)
-    const jsTimer = console.timeEnd('js')
-    console.log('Js Timer', jsTimer)
+    console.timeEnd('jsExtractedCode')
 
-    console.log('extracted', extracted)
-
+    console.time('jsManipulateDom')
     outputList.innerHTML = ''
     extracted.forEach((comment) => {
       outputList.innerHTML += `<li class="output__item">${comment}</li>`
     })
+    console.timeEnd('jsManipulateDom')
   })
 })
 
