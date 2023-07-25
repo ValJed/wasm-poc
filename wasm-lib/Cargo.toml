@@ -16,4 +16,15 @@ regex = "1.8.1"
 serde = "1.0.160"
 serde-wasm-bindgen = "0.5.0"
 wasm-bindgen = "0.2.84"
-web-sys = {version = "0.3.64", features = ["Window", "Document", "HtmlElement", "EventListener", "InputEvent"]}
+
+[dependencies.web-sys]
+  version = "0.3.64"
+  features = [
+    "Window", 
+    "Document",
+    "HtmlElement", 
+    "EventListener", 
+    "InputEvent", 
+    "console"
+  ]
+
